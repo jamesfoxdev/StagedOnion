@@ -1,5 +1,5 @@
 # StagedOnion
-A tool for hosting reverse shells and files through the Tor network, accessable even without Tor installed on the target machine. Agents interact with the hidden service through Tor2Web gateways, which provide equal levels of anonymity for the hidden service while also being accessible by hosts without a Tor installation. 
+A PoC for hosting reverse shells and files through the Tor network, accessable even without Tor installed on the target machine. Agents interact with the hidden service through Tor2Web gateways, which provide equal levels of anonymity for the listener while also being accessible by hosts without a Tor installation. 
 
 Interacting with the reverse HTTP shell is straightforward simply:
 1. Issue a `GET` request to '/' to get the command
@@ -13,7 +13,7 @@ A working Tor installation is needed in order to start and register the hidden s
 
 ## Installation
 ```
-git clone https://github.com/jamesfoxdev/StagedOnion
+git clone https://github.com/jamesfoxdev/StagedOnion.git
 cd StagedOnion
 go build .
 ./StagedOnion -h
@@ -43,7 +43,7 @@ Host the current working directory
 ```
 
 ## Roadmap
-- Embeded the Tor process in the Go binary so a Tor installation is not needed on the client or server
+- Embeded the Tor process in the Go binary such that a Tor installation is not needed on the client or server
 - Metasploit reverse HTTP intergration
 - Find more working Tor2Web extensions for redundancy
 
