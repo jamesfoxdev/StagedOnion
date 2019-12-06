@@ -33,14 +33,43 @@ A PoC for creating anonymous reverse shells and file hosting, accessible from co
 ```
 
 ## Examples
-To start the reverse HTTP listener
+### Start the reverse HTTP listener
 ```
 ./StagedOnion --shell
 ```
+Example output:
+```
+StagedOnion | @jamesfoxdev | github.com/jamesfoxdev
+[*] Starting and registering onion service, please wait a couple of minutes...
+[*] Listener started at http://pxpsa4slrlkimpygyndqat6zt7aobubs2dsat3dhnrmdkownitfvohid.onion
+[*] Potential entrypoints are:
+	 http://pxpsa4slrlkimpygyndqat6zt7aobubs2dsat3dhnrmdkownitfvohid.onion.pet
+	 http://pxpsa4slrlkimpygyndqat6zt7aobubs2dsat3dhnrmdkownitfvohid.onion.ws
+	 http://pxpsa4slrlkimpygyndqat6zt7aobubs2dsat3dhnrmdkownitfvohid.tor2web.info
+[*] Waiting for shell connection...
+```
+Upon receiving a shell:
+```
+...
+[+] Received reverse shell connection!
 
-Host the current working directory
+shell> 
+```
+
+### Host the current working directory
 ```
 ./StagedOnion --dir .
+```
+Example output:
+```
+StagedOnion | @jamesfoxdev | github.com/jamesfoxdev
+[*] Starting and registering onion service, please wait a couple of minutes...
+[*] Listener started at http://hotbxrhohncjufrynz4q4ompakkpifvv3s3etqo3femtq5d5dwadyaqd.onion
+[*] Potential entrypoints are:
+	 http://hotbxrhohncjufrynz4q4ompakkpifvv3s3etqo3femtq5d5dwadyaqd.onion.pet
+	 http://hotbxrhohncjufrynz4q4ompakkpifvv3s3etqo3femtq5d5dwadyaqd.onion.ws
+	 http://hotbxrhohncjufrynz4q4ompakkpifvv3s3etqo3femtq5d5dwadyaqd.tor2web.info
+[*] Serving directory '.'
 ```
 
 ## Roadmap
